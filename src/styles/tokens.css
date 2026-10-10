@@ -1,0 +1,120 @@
+/*
+ * Inclusive theme tokens. Every text and UI pair below passes WCAG 2.2 AA
+ * (checked in scripts/check-contrast.mjs). Severity never uses red against
+ * green: high is orange, medium is amber, low is blue, and each is paired
+ * with a shape and a text label.
+ */
+:root {
+  color-scheme: light;
+  --bg: #ffffff;
+  --surface: #f4f5f7;
+  --surface-2: #e9ebee;
+  --raised: #ffffff;
+  --stage: #dfe2e6;
+  --text: #1a1d21;
+  --text-2: #4a5058;
+  --accent: #0b6b53;
+  --accent-hover: #095a46;
+  --accent-ink: #ffffff;
+  --accent-soft: #e3f2ec;
+  --border: #767c84;
+  --hairline: #d5d8dd;
+  --focus: #1f5fa8;
+  --high: #b3400a;
+  --high-soft: #fbeae2;
+  --med: #8a5a00;
+  --med-soft: #faf0da;
+  --low: #1f5fa8;
+  --low-soft: #e4edf8;
+  --done: #0b6b53;
+  --done-soft: #e3f2ec;
+  --danger: #b3400a;
+  --pin-ink: #ffffff;
+  --shadow: 0 6px 24px rgba(20, 24, 30, 0.14);
+  --overlay: rgba(20, 24, 30, 0.45);
+
+  --font: 'Atkinson Hyperlegible', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  --r-sm: 6px;
+  --r: 8px;
+  --r-lg: 12px;
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 12px;
+  --s4: 16px;
+  --s5: 24px;
+  --s6: 32px;
+  --s7: 48px;
+  --target: 44px;
+}
+
+/* Dark: no pure black or pure white, to reduce glare and halation */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #121417;
+  --surface: #1c1f24;
+  --surface-2: #262a30;
+  --raised: #1c1f24;
+  --stage: #0c0e10;
+  --text: #eef0f2;
+  --text-2: #aeb4bb;
+  --accent: #5dcaa5;
+  --accent-hover: #7ad6b6;
+  --accent-ink: #121417;
+  --accent-soft: #173a30;
+  --border: #8a9199;
+  --hairline: #33383f;
+  --focus: #7cb4f0;
+  --high: #ff8a5c;
+  --high-soft: #3a2218;
+  --med: #f2c14e;
+  --med-soft: #3a3018;
+  --low: #7cb4f0;
+  --low-soft: #1b2b3e;
+  --done: #5dcaa5;
+  --done-soft: #173a30;
+  --danger: #ff8a5c;
+  --pin-ink: #121417;
+  --shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
+  --overlay: rgba(0, 0, 0, 0.6);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme='system'] {
+    color-scheme: dark;
+    --bg: #121417;
+    --surface: #1c1f24;
+    --surface-2: #262a30;
+    --raised: #1c1f24;
+    --stage: #0c0e10;
+    --text: #eef0f2;
+    --text-2: #aeb4bb;
+    --accent: #5dcaa5;
+    --accent-hover: #7ad6b6;
+    --accent-ink: #121417;
+    --accent-soft: #173a30;
+    --border: #8a9199;
+    --hairline: #33383f;
+    --focus: #7cb4f0;
+    --high: #ff8a5c;
+    --high-soft: #3a2218;
+    --med: #f2c14e;
+    --med-soft: #3a3018;
+    --low: #7cb4f0;
+    --low-soft: #1b2b3e;
+    --done: #5dcaa5;
+    --done-soft: #173a30;
+    --danger: #ff8a5c;
+    --pin-ink: #121417;
+    --shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
+    --overlay: rgba(0, 0, 0, 0.6);
+  }
+}
+
+/* Users who ask for more contrast get stronger lines and text */
+@media (prefers-contrast: more) {
+  :root {
+    --hairline: var(--border);
+    --text-2: var(--text);
+  }
+}

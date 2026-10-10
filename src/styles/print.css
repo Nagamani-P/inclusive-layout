@@ -1,0 +1,63 @@
+/* Print stylesheet: the report prints on white with dark text, whatever the theme. */
+@media print {
+  :root,
+  :root[data-theme] {
+    --bg: #ffffff;
+    --surface: #f4f5f7;
+    --raised: #ffffff;
+    --text: #1a1d21;
+    --text-2: #4a5058;
+    --hairline: #c9cdd2;
+    --high: #b3400a;
+    --high-soft: #fbeae2;
+    --med: #8a5a00;
+    --med-soft: #faf0da;
+    --low: #1f5fa8;
+    --low-soft: #e4edf8;
+    --done: #0b6b53;
+    --done-soft: #e3f2ec;
+    --accent: #0b6b53;
+    --accent-ink: #ffffff;
+    --pin-ink: #ffffff;
+    color-scheme: light;
+  }
+  @page {
+    margin: 14mm;
+  }
+  body {
+    background: #fff;
+    font-size: 12pt;
+  }
+  .no-print,
+  .skip-link {
+    display: none !important;
+  }
+  .report-page {
+    background: #fff;
+  }
+  .report {
+    max-width: none;
+    padding: 0;
+    gap: 0;
+  }
+  .report-cover,
+  .report-screen {
+    border: 0;
+    border-radius: 0;
+    padding: 0 0 8mm;
+  }
+  .report-screen {
+    break-before: page;
+  }
+  .report-screen-body {
+    grid-template-columns: 70mm 1fr;
+  }
+  .report-table tr,
+  .report-check {
+    break-inside: avoid;
+  }
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
