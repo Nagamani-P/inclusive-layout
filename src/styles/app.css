@@ -1536,8 +1536,80 @@ input[type='range'] {
   overflow-x: auto;
 }
 .film-item {
+  position: relative;
   flex: none;
   border-radius: var(--r);
+}
+/* Three-dot menu: shown on hover or keyboard focus, always on touch screens */
+.film-more {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--bg);
+  color: var(--text);
+  opacity: 0;
+  transition: opacity 0.12s;
+}
+.film-more:hover {
+  background: var(--surface-2);
+}
+.film-item:hover .film-more,
+.film-item:focus-within .film-more,
+.film-item.menu-open .film-more {
+  opacity: 1;
+}
+@media (hover: none) {
+  .film-more {
+    opacity: 1;
+  }
+}
+.film-menu {
+  position: fixed;
+  z-index: 50;
+  min-width: 180px;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  background: var(--bg);
+  box-shadow: var(--shadow);
+}
+.film-menu button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 36px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: left;
+}
+.film-menu button:hover:not(:disabled),
+.film-menu button:focus-visible {
+  background: var(--surface-2);
+}
+.film-menu button:disabled {
+  opacity: 0.45;
+}
+.film-menu .film-menu-danger {
+  color: var(--danger);
+}
+.film-menu-sep {
+  height: 1px;
+  margin: 4px 0;
+  background: var(--hairline);
 }
 .film-item.is-over {
   outline: 2px dashed var(--focus);

@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { ChevronLeft, ChevronRight, ImagePlus, MoveLeft, MoveRight, Pencil, Trash2 } from 'lucide-react';
+import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { ChevronLeft, ChevronRight, ImagePlus, MoreVertical, MoveLeft, MoveRight, Pencil, Trash2 } from 'lucide-react';
 import { StatusBadge } from './ui';
 import type { ScreenMeta } from '../types';
 
@@ -20,6 +20,71 @@ export default function Filmstrip({ screens, urls, activeId, onSelect, onMove, o
   const idx = screens.findIndex((s) => s.id === activeId);
   const active = screens[idx];
   const done = screens.filter((s) => s.status === 'done').length;
+  const [menu, setMenu] = useState<{ id: string; left: number; bottom: number } | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
+
+  const closeMenu = (refocus = false) => {
+    setMenu(null);
+    if (refocus) triggerRef.current?.focus();
+  };
+
+  const openMenu = (id: string, btn: HTMLButtonElement) => {
+    if (menu?.id === id) return closeMenu();
+    triggerRef.current = btn;
+    const r = btn.getBoundingClientRect();
+    // Fixed position so the horizontally scrolling list does not clip it; opens upward from the trigger
+    setMenu({ id, left: Math.max(8, Math.min(r.left, window.innerWidth - 188)), bottom: window.innerHeight - r.top + 4 });
+  };
+
+  useEffect(() => {
+    if (!menu) return;
+    menuRef.current?.querySelector<HTMLButtonElement>('button:not(:disabled)')?.focus();
+    const onDown = (e: PointerEvent) => {
+      const t = e.target as Node;
+      if (!menuRef.current?.contains(t) && !triggerRef.current?.contains(t)) closeMenu();
+    };
+    const onLeave = () => closeMenu();
+    document.addEventListener('pointerdown', onDown);
+    window.addEventListener('resize', onLeave);
+    window.addEventListener('scroll', onLeave, true);
+    return () => {
+      document.removeEventListener('pointerdown', onDown);
+      window.removeEventListener('resize', onLeave);
+      window.removeEventListener('scroll', onLeave, true);
+    };
+  }, [menu]);
+
+  const onMenuKey = (e: KeyboardEvent<HTMLDivElement>) => {
+    const items = Array.from(menuRef.current?.querySelectorAll<HTMLButtonElement>('button:not(:disabled)') ?? []);
+    const at = items.indexOf(document.activeElement as HTMLButtonElement);
+    const go = (i: number) => items[(i + items.length) % items.length]?.focus();
+    // Keep app-wide shortcuts (P, M, 1-9...) from firing while the menu is open
+    e.stopPropagation();
+    if (e.key === 'Escape' || e.key === 'Tab') {
+      e.preventDefault();
+      closeMenu(true);
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      go(at + 1);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      go(at - 1);
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      go(0);
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      go(items.length - 1);
+    }
+  };
+
+  const menuIdx = menu ? screens.findIndex((s) => s.id === menu.id) : -1;
+  const menuScreen = screens[menuIdx];
+  const act = (fn: () => void) => {
+    closeMenu(true);
+    fn();
+  };
 
   return (
     <nav className="filmstrip" aria-label="Screens">
@@ -61,7 +126,7 @@ export default function Filmstrip({ screens, urls, activeId, onSelect, onMove, o
         {screens.map((s, i) => (
           <li
             key={s.id}
-            className={`film-item${s.id === activeId ? ' is-active' : ''}${overIdx === i && dragId ? ' is-over' : ''}`}
+            className={`film-item${s.id === activeId ? ' is-active' : ''}${overIdx === i && dragId ? ' is-over' : ''}${menu?.id === s.id ? ' menu-open' : ''}`}
             draggable
             onDragStart={(e) => {
               setDragId(s.id);
@@ -100,6 +165,15 @@ export default function Filmstrip({ screens, urls, activeId, onSelect, onMove, o
                 , {s.issues.length} issue{s.issues.length === 1 ? '' : 's'}
               </span>
             </button>
+            <button
+              className="film-more"
+              onClick={(e) => openMenu(s.id, e.currentTarget)}
+              aria-label={`More actions for ${s.name}`}
+              aria-haspopup="menu"
+              aria-expanded={menu?.id === s.id}
+            >
+              <MoreVertical size={16} aria-hidden="true" />
+            </button>
           </li>
         ))}
         {screens.length < 20 && (
@@ -113,6 +187,34 @@ export default function Filmstrip({ screens, urls, activeId, onSelect, onMove, o
           </li>
         )}
       </ol>
+      {menu && menuScreen && (
+        <div
+          ref={menuRef}
+          className="film-menu"
+          role="menu"
+          aria-label={`Actions for ${menuScreen.name}`}
+          style={{ left: menu.left, bottom: menu.bottom }}
+          onKeyDown={onMenuKey}
+        >
+          <button role="menuitem" onClick={() => act(() => onRename(menuScreen.id))}>
+            <Pencil size={14} aria-hidden="true" />
+            Rename
+          </button>
+          <button role="menuitem" onClick={() => act(() => onMove(menuScreen.id, menuIdx - 1))} disabled={menuIdx <= 0}>
+            <MoveLeft size={14} aria-hidden="true" />
+            Move left
+          </button>
+          <button role="menuitem" onClick={() => act(() => onMove(menuScreen.id, menuIdx + 1))} disabled={menuIdx >= screens.length - 1}>
+            <MoveRight size={14} aria-hidden="true" />
+            Move right
+          </button>
+          <div className="film-menu-sep" role="separator" />
+          <button role="menuitem" className="film-menu-danger" onClick={() => act(() => onDelete(menuScreen.id))}>
+            <Trash2 size={14} aria-hidden="true" />
+            Remove
+          </button>
+        </div>
+      )}
     </nav>
   );
 }
