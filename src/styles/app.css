@@ -1045,6 +1045,28 @@ input[type='range'] {
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5);
   pointer-events: none;
 }
+.compare-divider.is-draggable {
+  pointer-events: auto;
+  cursor: ew-resize;
+  touch-action: none;
+}
+/* Wider invisible hit area so the thin line is easy to grab */
+.compare-divider.is-draggable::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -12px;
+  width: 24px;
+}
+.stage.can-slide {
+  cursor: ew-resize;
+  touch-action: none;
+}
+.stage.is-sliding,
+.stage.is-sliding * {
+  cursor: ew-resize !important;
+}
 .compare-knob {
   position: absolute;
   top: 50%;

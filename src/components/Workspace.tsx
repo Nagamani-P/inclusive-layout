@@ -356,6 +356,7 @@ export default function Workspace(props: Props) {
     url,
     width: displayW,
     sliderPos: slider,
+    onSliderChange: setSlider,
     visual,
     lensName,
     reach,

@@ -22,6 +22,8 @@ interface Props {
   onMeasure: (m: Omit<Measure, 'id'>) => void;
   onPick: (x: number, y: number) => void;
   onSelectIssue: (id: string) => void;
+  /** Drag the compare divider on the image */
+  onSliderChange?: (pos: number) => void;
   /** Only the primary stage takes keyboard pin placement */
   interactive?: boolean;
 }
@@ -45,6 +47,18 @@ export default function Stage(p: Props) {
   const [draft, setDraft] = useState<{ x0: number; y0: number; x1: number; y1: number } | null>(null);
   const [cross, setCross] = useState({ x: 0.5, y: 0.5 });
   const [focused, setFocused] = useState(false);
+  const [sliding, setSliding] = useState(false);
+  const canSlide = p.layers === 'both' && !!p.onSliderChange;
+
+  const slideTo = (e: PointerEvent) => p.onSliderChange?.(Math.round(norm(e).x * 100));
+  const startSlide = (e: PointerEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+    if (e.button !== 0) return;
+    e.preventDefault();
+    ref.current!.setPointerCapture(e.pointerId);
+    setSliding(true);
+    slideTo(e);
+  };
 
   const norm = (e: PointerEvent) => {
     const r = ref.current!.getBoundingClientRect();
@@ -52,17 +66,24 @@ export default function Stage(p: Props) {
   };
 
   const onPointerDown = (e: PointerEvent<HTMLDivElement>) => {
+    // In View mode, dragging anywhere on the image moves the compare divider
+    if (p.mode === 'view' && canSlide) return startSlide(e);
     if (p.mode !== 'measure' || e.button !== 0) return;
     const { x, y } = norm(e);
     e.currentTarget.setPointerCapture(e.pointerId);
     setDraft({ x0: x, y0: y, x1: x, y1: y });
   };
   const onPointerMove = (e: PointerEvent<HTMLDivElement>) => {
+    if (sliding) return slideTo(e);
     if (!draft) return;
     const { x, y } = norm(e);
     setDraft({ ...draft, x1: x, y1: y });
   };
   const onPointerUp = (e: PointerEvent<HTMLDivElement>) => {
+    if (sliding) {
+      setSliding(false);
+      return;
+    }
     if (p.mode === 'measure' && draft) {
       const m = { x: Math.min(draft.x0, draft.x1), y: Math.min(draft.y0, draft.y1), w: Math.abs(draft.x1 - draft.x0), h: Math.abs(draft.y1 - draft.y0) };
       setDraft(null);
@@ -113,11 +134,12 @@ export default function Stage(p: Props) {
   return (
     <div
       ref={ref}
-      className={`stage mode-${p.mode}`}
+      className={`stage mode-${p.mode}${canSlide && p.mode === 'view' ? ' can-slide' : ''}${sliding ? ' is-sliding' : ''}`}
       style={{ width, height }}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
+      onPointerCancel={() => setSliding(false)}
       onKeyDown={keyboardMode ? onKeyDown : undefined}
       tabIndex={keyboardMode ? 0 : undefined}
       role={keyboardMode ? 'application' : undefined}
@@ -140,7 +162,12 @@ export default function Stage(p: Props) {
       )}
       {p.layers === 'both' && (
         <>
-          <div className="compare-divider" style={{ left: `${p.sliderPos}%` }} aria-hidden="true">
+          <div
+            className={`compare-divider${canSlide ? ' is-draggable' : ''}`}
+            style={{ left: `${p.sliderPos}%` }}
+            aria-hidden="true"
+            onPointerDown={canSlide ? startSlide : undefined}
+          >
             <span className="compare-knob" />
           </div>
           <span className="stage-tag stage-tag-left" aria-hidden="true">
